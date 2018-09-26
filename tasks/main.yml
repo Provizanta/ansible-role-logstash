@@ -1,0 +1,20 @@
+- name: install logstash
+  package:
+    name: logstash
+    state: present
+  tags: install
+
+- name: configure logstash port
+  template:
+    src: beats.conf
+    dest: "{{ logstash.config_path }}/beats_{{ logstash.port }}.conf"
+    mode: "u=rw,go=r"
+  tags: configure
+
+- name: setup configured pipelines
+  systemd:
+    name: logstash
+    enabled: yes
+    state: restarted
+  tags: configure
+
