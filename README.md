@@ -17,10 +17,7 @@ elastic:
   index: "%{[@metadata][beat]}-%{[@metadata][version]}-%{+YYYY.MM.dd}"
 
 logstash:
-  port: "5044"
   config_path: "/etc/logstash/conf.d/"
-
-codec: "json"
 
 Dependencies
 ------------
@@ -39,7 +36,8 @@ Including an example of how to use your role (for instance, with variables passe
         elastic:
           index: "index name"
         logstash:
-          port: "5098"
+          tcp:
+            port: "5098"
 
 License
 -------
