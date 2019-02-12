@@ -1,9 +1,3 @@
-- name: establish dependencies 
-  package:
-    name: openjdk-8-jre-headless
-    state: present
-  tags: install
-
 - name: establish logstash
   package:
     name: logstash
