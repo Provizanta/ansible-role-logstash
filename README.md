@@ -1,7 +1,7 @@
 Logstash
 =========
 
-Logstash connector proxy for Elasticsearch cluster.
+Logstash installation and configuration role for Elasticsearch cluster.
 
 Requirements
 ------------
@@ -11,18 +11,8 @@ None
 Role Variables
 --------------
 
-    pipeline_configuration: <list of pipeline configurations>
-      - name: <pipeline name - retains only alphanumeric chars and underscore>
-        input:
-          type: <list of inputs (dictionaries)>
-        filter:
-          __if: <an 'if' clause - uses a string predicate (at toplevel or element level)> 
-          type: <list filters (dictionaries)>
-        output:
-          type:
-            - __if: <an 'if' clause - block level predicate string> 
-              <output>:
-                <setting> 
+    pipelines: <list of pipeline configurations>
+    plugins: <list of plugin names to be installed>
 
 Dependencies
 ------------
@@ -34,31 +24,30 @@ Example Playbook
 
     - hosts: servers
       roles:
-        - role: common/elk/logstash
+        - role: elk/logstash
           vars:
-            pipeline_configuration:
+            plugins:
+              - logstash-filter-fingerprint
+            pipelines:
               - name: Random index pipeline 1
-                input:
-                  type:
-                    - beats:
-                        port: 8854
-                filter:
-                  __if: '"random-index-data" in [tags]'
-                  type:
-                    - mutate:
-                        remove_field: "{{ removable_filebeat_fields }}"
-                    - json:
-                        source: message
-                output:
-                  type:
-                    - __if: '"random-index-data" in [tags]'
-                      elasticsearch:
-                        hosts: 127.0.0.1:9200
-                        manage_template: false
-                        index: "random-index-%{+YYYY.MM.dd}"
-                        document_type: _doc
-      vars:
-        removable_filebeat_fields: ["input", "type", "beat", "input_type", "offset", "source", "fields", "prospector"]
+                input: |
+                  beats {
+                    port => 32333
+                  }
+
+                filter: |
+                  date {
+                    match => '[ "timestamp", "yyyy-MM-dd HH:mm:ss,SSS" ]'
+                  } 
+
+                output: |
+                  elasticsearch {
+                    hosts => ['localhost:9200']
+                    index => '%{[@metadata][index_name]}-%{[@metadata][index_date]}'
+                    action => 'update'
+                    doc_as_upsert => true
+                    document_id => '%{[@metadata][fingerprint]}'
+                  }
 
 License
 -------
