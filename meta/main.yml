@@ -1,8 +1,12 @@
+---
+
 galaxy_info:
   author: Tibor Csoka
-  license:  MIT
 
-  min_ansible_version: 2.6
+  min_ansible_version: 2.7.8
 
-dependencies: 
-  - common/elk/base
+  platforms:
+  - name: Ubuntu
+    versions:
+    - 16.04
+    - 18.04

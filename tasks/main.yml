@@ -1,31 +1,7 @@
 ---
 
-- name: establish binary
-  become: yes
-  package:
-    name: logstash
-    state: present
-  tags: install
-
-- name: establish plugins
-  become: yes
-  logstash_plugin:
-    name:  "{{ item }}"
-    state: present
-  with_items: "{{ plugins }}"
-  notify: restart logstash
-  tags: install
-
-- name: enable service
-  become: yes
-  systemd:
-    name: logstash
-    enabled: yes
-    state: started
-  tags: install
-
-- name: load platform specific variables
-  # include_vars: "{{ lookup('first_found', params, errors='ignore') }}"
+- name: platform dependent vars
+  # include_tasks: "{{ lookup('first_found', params, errors='ignore') }}"
   include_vars: "{{ item }}"
   with_first_found:
     - files:
@@ -36,18 +12,56 @@
       paths:
         - '{{ role_path }}/vars/'
       skip: true
-  tags: configure
+  tags: [install, configure]
+
+- name: platform dependent tasks
+  # include_tasks: "{{ lookup('first_found', params, errors='ignore') }}"
+  include_tasks: "{{ item }}"
+  with_first_found:
+    - files:
+        - "{{ ansible_distribution }}-{{ ansible_distribution_release }}.yml"
+        - "{{ ansible_distribution }}.yml"
+        - "{{ ansible_os_family }}.yml"
+        - "{{ ansible_system }}.yml"
+      paths:
+        - '{{ role_path }}/tasks/platform/'
+      skip: true
+  tags: install
+
+- name: establish binary
+  become: yes
+  package:
+    name: logstash
+    state: present
+  tags: install
+
+- name: enable service
+  become: yes
+  systemd:
+    name: logstash
+    enabled: "{{ service['enabled'] }}"
+    state: "{{ 'restarted' if service['state'] == 'started' else service['state'] }}"
+  tags: [install,configure]
+
+- name: establish plugins
+  become: yes
+  logstash_plugin:
+    name:  "{{ item }}"
+    state: present
+  loop: "{{ plugins }}"
+  notify: restart logstash
+  tags: install
 
 - name: configure pipelines 
   become: yes
   template:
     src: pipeline.conf.j2
-    dest: "{{ logstash['pipelines']['path'] }}/{{ pipeline.name | regex_replace('[^0-9a-zA-Z_]+', '_') | lower }}.conf"
+    dest: "{{ platform['logstash']['pipelines']['config_dir'] }}/{{ pipeline.name | regex_replace('[^0-9a-zA-Z_]+', '_') | lower }}.conf"
     mode: "u=rw,go=r"
-    validate: "{{ logstash['binary'] }} -t -f %s --debug --verbose"
+    validate: "{{ platform['logstash']['binary'] }} -t -f %s --debug --verbose"
   loop_control:
     loop_var: pipeline
-  with_items: "{{ pipelines }}"
+  loop: "{{ pipelines }}"
   notify: restart logstash
   tags: configure
 

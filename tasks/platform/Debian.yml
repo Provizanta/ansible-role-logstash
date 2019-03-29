@@ -1,0 +1,30 @@
+---
+
+- name: establish dependencies
+  package:
+    name:
+      - apt-transport-https
+      - openjdk-*-jre-headless
+    state: present
+  tags: install
+
+- name: establish elasticsearch repo key
+  apt_key:
+    url: "https://artifacts.elastic.co/GPG-KEY-elasticsearch"
+    id: D27D666CD88E42B4
+    state: present
+  tags: install
+
+- name: establish elasticsearch repo
+  lineinfile:
+    line: "deb https://artifacts.elastic.co/packages/{{ version | int }}.x/apt stable main"
+    path: /etc/apt/sources.list.d/elastic.list
+    create: yes
+  register: apt_update
+  tags: install
+
+- name: udpate repositories
+  apt:
+    update_cache: yes
+  tags: install
+  when: apt_update.changed

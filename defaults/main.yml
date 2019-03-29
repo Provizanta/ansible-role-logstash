@@ -1,5 +1,11 @@
 ---
 
+version: 6
+
 pipelines: []
 
 plugins: []
+
+service:
+  enabled: yes
+  state: started

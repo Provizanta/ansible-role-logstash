@@ -1,7 +1,7 @@
 Logstash
 =========
 
-Logstash installation and configuration role for Elasticsearch cluster.
+Logstash installation and configuration role for ELK stack.
 
 Requirements
 ------------
@@ -11,13 +11,15 @@ None
 Role Variables
 --------------
 
+    version: <string or int representing a version>
     pipelines: <list of pipeline configurations>
     plugins: <list of plugin names to be installed>
+    service: <service status>
 
 Dependencies
 ------------
 
-common/elk/base
+None
 
 Example Playbook
 ----------------

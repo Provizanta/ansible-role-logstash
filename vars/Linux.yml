@@ -2,6 +2,6 @@
 
 logstash:
   pipelines:
-    path: "/etc/logstash/conf.d/"
+    config_dir: "/etc/logstash/conf.d/"
   binary: "/usr/share/logstash/bin/logstash"
 
