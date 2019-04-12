@@ -1,47 +1,39 @@
 ---
 
 - name: platform dependent vars
-  # include_tasks: "{{ lookup('first_found', params, errors='ignore') }}"
   include_vars: "{{ item }}"
-  with_first_found:
-    - files:
+  loop: "{{ query('first_found', params, errors='ignore') }}"
+  vars:
+    params:
+      files:
         - "{{ ansible_distribution }}-{{ ansible_distribution_release }}.yml"
         - "{{ ansible_distribution }}.yml"
         - "{{ ansible_os_family }}.yml"
         - "{{ ansible_system }}.yml"
       paths:
         - '{{ role_path }}/vars/'
-      skip: true
-  tags: [install, configure]
+  tags: always
 
 - name: platform dependent tasks
-  # include_tasks: "{{ lookup('first_found', params, errors='ignore') }}"
   include_tasks: "{{ item }}"
-  with_first_found:
-    - files:
+  loop: "{{ query('first_found', params, errors='ignore') }}"
+  vars:
+    params:
+      files:
         - "{{ ansible_distribution }}-{{ ansible_distribution_release }}.yml"
         - "{{ ansible_distribution }}.yml"
         - "{{ ansible_os_family }}.yml"
         - "{{ ansible_system }}.yml"
       paths:
         - '{{ role_path }}/tasks/platform/'
-      skip: true
   tags: install
 
-- name: establish binary
+- name: establish package
   become: yes
   package:
     name: logstash
     state: present
   tags: install
-
-- name: enable service
-  become: yes
-  systemd:
-    name: logstash
-    enabled: "{{ service['enabled'] }}"
-    state: "{{ 'restarted' if service['state'] == 'started' else service['state'] }}"
-  tags: [install,configure]
 
 - name: establish plugins
   become: yes
@@ -49,19 +41,33 @@
     name:  "{{ item }}"
     state: present
   loop: "{{ plugins }}"
-  notify: restart logstash
+  register: loaded_plugins
   tags: install
+
+- name: populate service facts
+  service_facts:
+  tags: always
 
 - name: configure pipelines 
   become: yes
+  vars:
+    validation: "{{ '%s -t -f %%s --debug --verbose' | format(platform['logstash']['binary']) if ansible_facts['services']['logstash.service'] is defined else 'true || %s' }}"
   template:
-    src: pipeline.conf.j2
-    dest: "{{ platform['logstash']['pipelines']['config_dir'] }}/{{ pipeline.name | regex_replace('[^0-9a-zA-Z_]+', '_') | lower }}.conf"
+    src: pipeline.conf.j2   
+    dest: "{{ config_dir | default(platform['logstash']['pipelines']['config_dir']) }}/{{ pipeline.key | regex_replace('[^0-9a-zA-Z_]+', '_') }}.conf"
     mode: "u=rw,go=r"
-    validate: "{{ platform['logstash']['binary'] }} -t -f %s --debug --verbose"
+    validate: "{{ validation }}" 
   loop_control:
     loop_var: pipeline
-  loop: "{{ pipelines }}"
-  notify: restart logstash
+  loop: "{{ pipelines | dict2items }}"
   tags: configure
+
+- name: setup services
+  become: yes
+  systemd:
+    name: logstash
+    enabled: "{{ service['enabled'] }}"
+    state: "{{ 'restarted' if service['state'] == 'started' else service['state'] }}"
+  when: ansible_facts['services']['logstash'] is defined or loaded_plugins.changed
+  tags: always
 

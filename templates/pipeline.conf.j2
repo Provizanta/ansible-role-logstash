@@ -1,17 +1,3 @@
 # {{ ansible_managed }} 
 
-{% macro print_indented(s, indent=2) -%}
-{{- '' if s == '' else s | indent(width=2, first=true) -}}
-{%- endmacro -%}
-
-input {
-{{ print_indented(pipeline.get('input',''))  -}}
-}
-
-filter {
-{{ print_indented(pipeline.get('filter','')) -}}
-}
-
-output {
-{{ print_indented(pipeline.get('output','')) -}}
-}
+{{ pipeline.value }}

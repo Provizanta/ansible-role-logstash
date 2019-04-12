@@ -12,6 +12,7 @@ Role Variables
 --------------
 
     version: <string or int representing a version>
+    config_dir: <string, path of the dir containing pipeline configurations>
     pipelines: <list of pipeline configurations>
     plugins: <list of plugin names to be installed>
     service: <service status>
@@ -31,18 +32,20 @@ Example Playbook
             plugins:
               - logstash-filter-fingerprint
             pipelines:
-              - name: Random index pipeline 1
-                input: |
+              production_pipeline: |
+                input {
                   beats {
                     port => 32333
                   }
+                }
 
-                filter: |
+                filter {
                   date {
                     match => '[ "timestamp", "yyyy-MM-dd HH:mm:ss,SSS" ]'
-                  } 
+                  }
+                }
 
-                output: |
+                output {
                   elasticsearch {
                     hosts => ['localhost:9200']
                     index => '%{[@metadata][index_name]}-%{[@metadata][index_date]}'
@@ -50,6 +53,7 @@ Example Playbook
                     doc_as_upsert => true
                     document_id => '%{[@metadata][fingerprint]}'
                   }
+                }
 
 License
 -------

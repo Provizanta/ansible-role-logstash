@@ -1,6 +1,0 @@
----
-
-- name: restart logstash
-  service:
-    name: logstash
-    state: "{{ 'restarted' if service['state'] == 'started' else service['state'] }}"
