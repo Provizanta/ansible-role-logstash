@@ -2,10 +2,10 @@
 
 version: 6
 
-pipelines: []
+pipelines: {}
 
 plugins: []
 
 service:
-  enabled: yes
+  enabled: true
   state: started

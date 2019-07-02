@@ -1,0 +1,6 @@
+---
+
+- name: restart logstash
+  service:
+    name: logstash
+    state: "{{ (service['state'] == 'started') | ternary('restarted', service['state']) }}"

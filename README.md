@@ -1,7 +1,7 @@
-Logstash
+Ansible role: Logstash
 =========
 
-Logstash installation and configuration role for ELK stack.
+Logstash installation and configuration role for ELK stack. Allows to install arbitrary plugins and introduce new pipeline configurations.
 
 Requirements
 ------------
@@ -11,11 +11,20 @@ None
 Role Variables
 --------------
 
-    version: <string or int representing a version>
-    config_dir: <string, path of the dir containing pipeline configurations>
-    pipelines: <list of pipeline configurations>
-    plugins: <list of plugin names to be installed>
-    service: <service status>
+These defaults are set in defaults/main.yml:
+
+    version: 6
+
+    pipelines: {}   # dict, key represents pipeline name, value is the string content of the pipeline configuration file
+
+    plugins: []
+
+    service:
+      enabled: true
+      state: started
+
+Non-defaulted variables that can be set:
+
 
 Dependencies
 ------------
@@ -27,7 +36,7 @@ Example Playbook
 
     - hosts: servers
       roles:
-        - role: elk/logstash
+        - role: logstash
           vars:
             plugins:
               - logstash-filter-fingerprint
@@ -63,4 +72,4 @@ MIT
 Author Information
 ------------------
 
-Tibor Csoka
+Tibor Csóka

@@ -1,0 +1,11 @@
+---
+
+java_packages:
+  - apt-transport-https
+  - openjdk-11-jre-headless
+
+platform:
+  logstash:
+    pipelines:
+      config_dir: "/etc/logstash/conf.d/"
+    binary: "/usr/share/logstash/bin/logstash"

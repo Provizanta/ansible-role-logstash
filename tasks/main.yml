@@ -11,7 +11,7 @@
         - "{{ ansible_os_family }}.yml"
         - "{{ ansible_system }}.yml"
       paths:
-        - '{{ role_path }}/vars/'
+        - '{{ role_path }}/vars/platform'
   tags: always
 
 - name: platform dependent tasks
@@ -25,49 +25,52 @@
         - "{{ ansible_os_family }}.yml"
         - "{{ ansible_system }}.yml"
       paths:
-        - '{{ role_path }}/tasks/platform/'
+        - '{{ role_path }}/tasks/platform/pre-install/'
   tags: install
 
 - name: establish package
-  become: yes
+  become: true
   package:
     name: logstash
     state: present
   tags: install
 
 - name: establish plugins
-  become: yes
+  become: true
   logstash_plugin:
-    name:  "{{ item }}"
+    name: "{{ item }}"
     state: present
   loop: "{{ plugins }}"
-  register: loaded_plugins
+  notify: restart logstash
   tags: install
 
 - name: populate service facts
   service_facts:
   tags: always
 
-- name: configure pipelines 
-  become: yes
+- name: configure pipelines
+  become: true
   vars:
-    validation: "{{ '%s -t -f %%s --debug --verbose' | format(platform['logstash']['binary']) if ansible_facts['services']['logstash.service'] is defined else 'true || %s' }}"
+    validation: "{{ ansible_facts['services']['logstash.service'] is defined |
+    ternary('%s -t -f %%s --debug --verbose' | format(platform['logstash']['binary']), 'true || %s') }}"
   template:
-    src: pipeline.conf.j2   
+    src: pipeline.conf.j2
     dest: "{{ config_dir | default(platform['logstash']['pipelines']['config_dir']) }}/{{ pipeline.key | regex_replace('[^0-9a-zA-Z_]+', '_') }}.conf"
     mode: "u=rw,go=r"
-    validate: "{{ validation }}" 
+    validate: "{{ validation }}"
   loop_control:
     loop_var: pipeline
   loop: "{{ pipelines | dict2items }}"
+  notify: restart logstash
   tags: configure
 
 - name: setup services
-  become: yes
+  become: true
   systemd:
     name: logstash
     enabled: "{{ service['enabled'] }}"
-    state: "{{ 'restarted' if service['state'] == 'started' else service['state'] }}"
-  when: ansible_facts['services']['logstash'] is defined or loaded_plugins.changed
+    state: "{{ service['state'] }}"
+  when:
+    - ansible_service_mgr == 'systemd'
+    - ansible_facts['services']['logstash'] is defined
   tags: always
-
