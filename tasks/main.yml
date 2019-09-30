@@ -52,10 +52,12 @@
   become: true
   vars:
     validation: "{{ ansible_facts['services']['logstash.service'] is defined |
-    ternary('%s -t -f %%s --debug --verbose' | format(platform['logstash']['binary']), 'true || %s') }}"
+    ternary('sudo -u logstash %s -t -f %%s --debug --verbose' | format(platform['logstash']['binary']), 'true || %s') }}"
   template:
     src: pipeline.conf.j2
     dest: "{{ config_dir | default(platform['logstash']['pipelines']['config_dir']) }}/{{ pipeline.key | regex_replace('[^0-9a-zA-Z_]+', '_') }}.conf"
+    owner: logstash
+    group: logstash
     mode: "u=rw,go=r"
     validate: "{{ validation }}"
   loop_control:
