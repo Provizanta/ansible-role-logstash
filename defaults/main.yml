@@ -1,11 +1,11 @@
 ---
 
-version: 6
+elk_version: 6
 
-pipelines: {}
+elk_logstash_pipelines: {}
 
-plugins: []
+elk_logstash_plugins: []
 
-service:
+elk_logstash_service:
   enabled: true
   state: started

@@ -39,7 +39,7 @@
 
 - name: establish elasticsearch repo
   apt_repository:
-    repo: "deb https://artifacts.elastic.co/packages/{{ version | int }}.x/apt stable main"
+    repo: "deb https://artifacts.elastic.co/packages/{{ elk_version | int }}.x/apt stable main"
     state: present
-    filename: elastic
+    filename: elk
   tags: install

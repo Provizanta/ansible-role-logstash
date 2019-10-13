@@ -3,4 +3,4 @@
 - name: restart logstash
   service:
     name: logstash
-    state: "{{ (service['state'] == 'started') | ternary('restarted', service['state']) }}"
+    state: "{{ (elk_logstash_service['state'] == 'started') | ternary('restarted', elk_logstash_service['state']) }}"

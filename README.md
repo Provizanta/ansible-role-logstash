@@ -11,15 +11,15 @@ None
 Role Variables
 --------------
 
-These defaults are set in defaults/main.yml:
+These variables are set in [defaults/main.yml](./defaults/main.yml):
 
-    version: 6
+    elk_version: 6
 
-    pipelines: {}   # dict, key represents pipeline name, value is the string content of the pipeline configuration file
+    elk_logstash_pipelines: {}   # dict, key represents pipeline name, value is the string content of the pipeline configuration file
 
-    plugins: []
+    elk_logstash_plugins: []
 
-    service:
+    elk_logstash_service:
       enabled: true
       state: started
 
@@ -34,13 +34,14 @@ None
 Example Playbook
 ----------------
 
-    - hosts: servers
+    - name: Converge
+      hosts: all
       roles:
         - role: logstash
           vars:
-            plugins:
+            elk_logstash_plugins:
               - logstash-filter-fingerprint
-            pipelines:
+            elk_logstash_pipelines:
               production_pipeline: |
                 input {
                   beats {

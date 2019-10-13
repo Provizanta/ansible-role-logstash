@@ -40,7 +40,7 @@
   logstash_plugin:
     name: "{{ item }}"
     state: present
-  loop: "{{ plugins }}"
+  loop: "{{ elk_logstash_plugins }}"
   notify: restart logstash
   tags: install
 
@@ -62,16 +62,16 @@
     validate: "{{ validation }}"
   loop_control:
     loop_var: pipeline
-  loop: "{{ pipelines | dict2items }}"
+  loop: "{{ elk_logstash_pipelines | dict2items }}"
   notify: restart logstash
   tags: configure
 
-- name: setup services
+- name: setup _services
   become: true
   systemd:
     name: logstash
-    enabled: "{{ service['enabled'] }}"
-    state: "{{ service['state'] }}"
+    enabled: "{{ elk_logstash_service['enabled'] }}"
+    state: "{{ elk_logstash_service['state'] }}"
   when:
     - ansible_service_mgr == 'systemd'
     - ansible_facts['services']['logstash'] is defined
