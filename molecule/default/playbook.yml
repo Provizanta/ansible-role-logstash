@@ -2,6 +2,11 @@
 
 - name: Converge
   hosts: all
+  pre_tasks:
+    - name: update apt repository
+      when: 'ansible_pkg_mgr == "apt"'
+      apt:
+        update_cache: true
   roles:
     - role: logstash
       vars:

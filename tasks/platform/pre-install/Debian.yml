@@ -16,6 +16,11 @@
     - "deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-updates universe"
     - "deb http://security.ubuntu.com/ubuntu/ {{ ansible_distribution_release }}-security universe"
 
+- name: establish dependencies
+  package:
+    name: gpg-agent
+  tags: install
+
 - name: update repos (docker)
   when:
     - ansible_connection == 'docker'
@@ -23,6 +28,7 @@
     - ansible_distribution_release == 'xenial'
   apt:
     update_cache: true
+  tags: install
 
 - name: establish dependencies
   apt:
