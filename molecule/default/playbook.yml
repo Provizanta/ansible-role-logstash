@@ -8,7 +8,7 @@
       apt:
         update_cache: true
   roles:
-    - role: logstash
+    - role: ansible-role-logstash
       vars:
         elk_logstash_plugins:
           - logstash-filter-fingerprint

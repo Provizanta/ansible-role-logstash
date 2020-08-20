@@ -1,6 +1,8 @@
 Ansible role: Logstash
 =========
 
+![Build & Deploy](https://github.com/Provizanta/ansible-role-logstash/workflows/molecule/badge.svg?branch=master)
+
 Logstash installation and configuration role for ELK stack. Allows to install arbitrary plugins and introduce new pipeline configurations.
 
 Requirements
