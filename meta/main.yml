@@ -2,6 +2,7 @@
 
 galaxy_info:
   role_name: logstash
+  namespace: provizanta
   author: Tibor Csóka
   description: |
     "Establish logstash with the specified pipelines."
